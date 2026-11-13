@@ -18,7 +18,7 @@ def armar():
     notificador = NotificadorEnMemoria()
     lista = ListaDeEspera(notificador)
     calendario = CalendarioObservable("cancha-1", "2026-11-10")
-    calendario.suscribir(lista)
+    calendario.mirame(lista)
     calendario.reservar("r-1", "ana", 18, 19)
     return calendario, lista, notificador
 
@@ -31,8 +31,8 @@ def test_consultar_cuesta_una_consulta_por_intervalo():
 def test_cancelar_avisa_a_cada_observador_en_orden():
     registro = []
     calendario = CalendarioObservable("cancha-1", "2026-11-10")
-    calendario.suscribir(Anotador("primero", registro))
-    calendario.suscribir(Anotador("segundo", registro))
+    calendario.mirame(Anotador("primero", registro))
+    calendario.mirame(Anotador("segundo", registro))
     calendario.reservar("r-1", "ana", 18, 19)
     calendario.cancelar("r-1")
     assert registro == [("primero", "cancha-1", DIECIOCHO), ("segundo", "cancha-1", DIECIOCHO)]
@@ -46,7 +46,7 @@ def test_el_aviso_llega_despues_de_cancelar():
             estados.append(calendario.esta_libre(franja.inicio, franja.fin))
 
     calendario = CalendarioObservable("cancha-1", "2026-11-10")
-    calendario.suscribir(MiraElCalendario())
+    calendario.mirame(MiraElCalendario())
     calendario.reservar("r-1", "ana", 18, 19)
     calendario.cancelar("r-1")
     assert estados == [True]
@@ -55,7 +55,7 @@ def test_el_aviso_llega_despues_de_cancelar():
 def test_reservar_no_avisa():
     registro = []
     calendario = CalendarioObservable("cancha-1", "2026-11-10")
-    calendario.suscribir(Anotador("unico", registro))
+    calendario.mirame(Anotador("unico", registro))
     calendario.reservar("r-1", "ana", 18, 19)
     assert registro == []
 
