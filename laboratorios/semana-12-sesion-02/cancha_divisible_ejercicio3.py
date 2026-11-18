@@ -44,3 +44,114 @@ Esta vez no hay codigo de partida. Corre las pruebas con:
 
 from inventario_ejercicio2 import Recurso, Reservable
 from reservas import MAXIMO_HORAS_POR_ESTUDIANTE
+
+class CanchaDivisible(Recurso):
+
+  def __init__(self, nombre):
+    super().__init__(nombre)
+
+    self.mitades = []
+
+    mitad_a = Reservable(nombre + "-a", "media cancha")
+    mitad_b = Reservable(nombre + "-b", "media cancha")
+
+    self.mitades.append(mitad_a)
+    self.mitades.append(mitad_b)
+
+  def buscar(self, tipo, inicio, fin):
+
+    if tipo == "cancha":
+
+      if (self.mitades[0].calendario.esta_libre(inicio, fin) and self.mitades[1].calendario.esta_libre(inicio, fin)):
+
+        return [self.nombre]
+
+      return []
+
+    elif tipo == "media cancha":
+
+      encontrados = []
+
+      for mitad in self.mitades:
+    
+        encontrados = encontrados + mitad.buscar(tipo, inicio, fin)
+
+      return encontrados
+
+    return []
+
+  def contar(self, tipo):
+
+    if tipo == "cancha":
+
+      return 1
+
+    elif tipo == "media cancha":
+    
+      return 2
+
+    return 0
+
+  def encontrar(self, nombre):
+
+    if self.nombre == nombre:
+      
+      return self
+
+    for mitad in self.mitades:
+
+      encontrado = mitad.encontrar(nombre)
+
+      if encontrado is not None:
+        
+        return encontrado
+
+    return None
+
+  def rutas(self, tipo, inicio, fin, ruta):
+
+    if tipo == "cancha":
+
+      if (self.mitades[0].calendario.esta_libre(inicio, fin) and self.mitades[1].calendario.esta_libre(inicio, fin)):
+
+        return [ruta + self.nombre]
+
+      return []
+
+    elif tipo == "media cancha":
+
+      encontrados = []
+
+      for mitad in self.mitades:
+
+        encontrados = encontrados + mitad.rutas(tipo, inicio, fin, ruta + self.nombre + " / " )
+
+      return encontrados
+
+    return []
+
+  def reservar(self, id_reserva, estudiante, inicio, fin):
+
+    mitad_a = self.mitades[0]
+    mitad_b = self.mitades[1]
+
+    ids_a = [r[0] for r in mitad_a.calendario.reservas()]
+    ids_b = [r[0] for r in mitad_b.calendario.reservas()]
+
+    if id_reserva + "-a" in ids_a or id_reserva + "-b" in ids_b:
+      
+      raise ValueError("id repetido")
+
+    
+    if (not mitad_a.calendario.esta_libre(inicio, fin) or not mitad_b.calendario.esta_libre(inicio, fin)):
+
+      raise ValueError("franja ocupada")
+
+    duracion = fin - inicio
+
+    if (mitad_a.calendario.horas_de(estudiante) + duracion > MAXIMO_HORAS_POR_ESTUDIANTE or mitad_b.calendario.horas_de(estudiante) + duracion > MAXIMO_HORAS_POR_ESTUDIANTE):
+
+      raise ValueError("limite de horas alcanzado")
+    
+    mitad_a.reservar(id_reserva + "-a", estudiante, inicio, fin)
+    mitad_b.reservar(id_reserva + "-b", estudiante, inicio, fin)
